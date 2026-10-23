@@ -227,14 +227,20 @@ enum Slides {
         var y = r.minY
         let other = c.master?.xml.at("txStyles", "otherStyle")
         for row in tbl.kids("tr") {
-          let h = emu(row.attr("h")) ?? 20
+          let cells = row.kids("tc").enumerated().map { i, cell in
+            (cell, i < widths.count ? widths[i] : 72, cell.kid("txBody").map { text($0, styles: [other].compactMap { $0 }, title: false, scale: 1, c) })
+          }
+          // rows grow to fit their text, as in PowerPoint
+          let h = cells.reduce(emu(row.attr("h")) ?? 20) { m, cell in
+            max(m, (cell.2?.boundingRect(with: CGSize(width: max(1, cell.1 - 14.4), height: .greatestFiniteMagnitude),
+                                         options: [.usesLineFragmentOrigin, .usesFontLeading]).height ?? 0) + 7.2)
+          }
           var x = r.minX
-          for (i, cell) in row.kids("tc").enumerated() {
-            let w = i < widths.count ? widths[i] : 72
+          for (cell, w, t) in cells {
             var s = Shape(rect: map(CGRect(x: x, y: y, width: w, height: h)))
             s.line = NSColor(white: 0.6, alpha: 1)
             s.fill = cell.kid("tcPr").flatMap { fill($0, c) }
-            s.text = cell.kid("txBody").map { text($0, styles: [other].compactMap { $0 }, title: false, scale: 1, c) }
+            s.text = t
             out.append(s)
             x += w
           }

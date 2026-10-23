@@ -155,18 +155,19 @@ enum OfficeTools {
     let out = NSMutableAttributedString(), fm = NSFontManager.shared
     var n = 0
     for b in blocks {
-      var size: CGFloat = 12, bold = false, prefix = "", indent: CGFloat = 0
+      var size: CGFloat = 12, bold = false, prefix = "", indent: CGFloat = 0, list: NSTextList?
       let runs: [Run]
       switch b {
       case .heading(let l, let r): size = [24, 18, 15, 13, 12, 12][min(max(l, 1), 6) - 1]; bold = true; runs = r; n = 0
       case .para(let r): runs = r; n = 0
-      case .item(let ordered, let r): n += 1; prefix = ordered ? "\(n).\t" : "•\t"; indent = 18; runs = r
+      case .item(let ordered, let r): n += 1; prefix = ordered ? "\t\(n).\t" : "\t•\t"; indent = 24; runs = r; list = NSTextList(markerFormat: ordered ? .decimal : .disc, options: 0)
       case .image, .pageBreak: continue
       }
       let ps = NSMutableParagraphStyle()
       ps.paragraphSpacing = 6
       ps.headIndent = indent
-      ps.tabStops = indent > 0 ? [NSTextTab(textAlignment: .left, location: indent)] : []
+      ps.tabStops = indent > 0 ? [NSTextTab(textAlignment: .left, location: 8), NSTextTab(textAlignment: .left, location: indent)] : []
+      if let list { ps.textLists = [list] }
       let base = NSFont.systemFont(ofSize: size)
       out.append(NSAttributedString(string: prefix, attributes: [.font: base, .paragraphStyle: ps]))
       for r in runs {
@@ -416,7 +417,7 @@ enum OfficeTools {
           if para.isEmpty { para = l.text }
           else if para.hasSuffix("-"), para.dropLast().last?.isLetter == true { para = String(para.dropLast()) + l.text }
           else { para += " " + l.text }
-          if Double(l.text.count) < Double(longest) * 0.7 || l.text.hasSuffix(":") { flush() }
+          if Double(l.text.count) < Double(longest) * 0.7 || l.text.last.map(".:!?".contains) == true { flush() }
         }
       }
       flush()
