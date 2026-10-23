@@ -18,7 +18,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/dial.png" width="860" alt="The Lemon dial in Convert, Edit and Actions modes">
+  <img src="docs/demo.gif" width="640" alt="Demo: drag a photo, tap Shift for Convert, Command for Edit, Control for Actions, drop to save">
+  <br><sub>Drag, tap a key, drop. (Rendered preview: the real dial is Liquid Glass.)</sub>
 </p>
 
 ---
@@ -32,6 +33,10 @@ Start dragging any file in Finder, then tap a key. A dial of tools blooms around
 | <kbd>⇧ Shift</kbd> | **Convert** | Every format that file can become |
 | <kbd>⌘ Command</kbd> | **Edit** | Compress, crop, trim, redact, protect and more |
 | <kbd>⌃ Control</kbd> | **Actions** | AirDrop, Float, Copy, Move, Rename, Checksum |
+
+<p align="center">
+  <img src="docs/dial.png" width="860" alt="The Lemon dial in Convert, Edit and Actions modes">
+</p>
 
 Switch modes mid-drag by tapping another key. Tools that need a decision (how much to compress, where to crop, which pages to keep) open a small Liquid Glass window with a live preview. Everything else is one drop.
 
@@ -141,7 +146,7 @@ swift build && .build/debug/Lemon --selftest
 build/Lemon.app/Contents/MacOS/Lemon --selftest
 ```
 
-Add `--render path.png` to also render the dial and every editor window offscreen for a quick visual check.
+Add `--render path.png` to also render the dial and every editor window offscreen for a quick visual check, or `--demo path.gif` to regenerate the README demo.
 
 ## Project layout
 

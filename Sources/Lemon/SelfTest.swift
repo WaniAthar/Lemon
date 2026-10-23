@@ -278,6 +278,19 @@ import UniformTypeIdentifiers
     await pdfPack(dir: dir)  // PDFSelfTest.swift
     await officePack(dir: dir)  // OfficeSelfTest.swift
     await extrasPack(dir: dir)  // ExtraSelfTest.swift
+    if let i = CommandLine.arguments.firstIndex(of: "--demo"), i + 1 < CommandLine.arguments.count {
+      let photo = dir.appendingPathComponent("demo/photo.jpg")
+      try? FileManager.default.createDirectory(at: photo.deletingLastPathComponent(), withIntermediateDirectories: true)
+      let c = CGContext(data: nil, width: 400, height: 300, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+      let sky = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!, colors: [
+        CGColor(red: 1, green: 0.62, blue: 0.35, alpha: 1), CGColor(red: 0.42, green: 0.36, blue: 0.85, alpha: 1)] as CFArray, locations: nil)!
+      c.drawLinearGradient(sky, start: CGPoint(x: 0, y: 0), end: CGPoint(x: 0, y: 300), options: [])
+      c.setFillColor(CGColor(red: 1, green: 0.85, blue: 0.3, alpha: 1)); c.fillEllipse(in: CGRect(x: 150, y: 70, width: 100, height: 100))
+      c.setFillColor(CGColor(red: 0.18, green: 0.2, blue: 0.35, alpha: 1)); c.fill(CGRect(x: 0, y: 0, width: 400, height: 80))
+      try? ImageTools.write(c.makeImage()!, props: [:], type: .jpeg, to: photo)
+      renderDemo(photo: photo, to: URL(fileURLWithPath: CommandLine.arguments[i + 1]))
+    }
     if let i = CommandLine.arguments.firstIndex(of: "--render"), i + 1 < CommandLine.arguments.count {
       let out = URL(fileURLWithPath: CommandLine.arguments[i + 1])
       renderPreview(urls: [jpg], to: out)
