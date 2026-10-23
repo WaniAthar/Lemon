@@ -147,22 +147,24 @@ enum ShelfGeo {
   static var open: [ShelfPanel] = []
   static weak var dragSource: ShelfModel?  // a shelf ignores its own drags
 
-  /// The Float action: adds to the frontmost shelf, or opens one at the cursor.
+  /// There is one shelf; a closing one doesn't count.
+  static var current: ShelfPanel? { open.last { !$0.model.closing } }
+
+  /// The Float action: adds to the shelf, opening it at the cursor if needed.
   @discardableResult static func float(_ urls: [URL]) -> [URL] {
-    let live = open.filter { !$0.model.closing }
-    let front = NSApp.orderedWindows.lazy.compactMap { $0 as? ShelfPanel }.first { live.contains($0) }
-    let shelf = front ?? live.last ?? make(at: NSEvent.mouseLocation)
+    let shelf = current ?? make(at: NSEvent.mouseLocation)
     shelf.model.add(urls)
     shelf.orderFrontRegardless()
     return []
   }
 
+  /// Menu "Show Shelf": brings the shelf forward, or opens an empty one mid-screen.
   static func newShelf() {
     let vf = NSScreen.main?.visibleFrame ?? .zero
-    make(at: NSPoint(x: vf.midX, y: vf.midY)).makeKey()
+    (current ?? make(at: NSPoint(x: vf.midX, y: vf.midY))).makeKeyAndOrderFront(nil)
   }
 
-  @discardableResult static func make(at p: NSPoint) -> ShelfPanel {
+  @discardableResult private static func make(at p: NSPoint) -> ShelfPanel {
     let s = ShelfPanel(at: p)
     open.append(s)
     s.orderFrontRegardless()
@@ -307,6 +309,7 @@ final class ShelfPanel: NSPanel, NSDraggingSource, QLPreviewPanelDataSource {
       case "a": m.selectAll()
       case "c": _ = ActionTools.copy(m.selected)
       case "o": m.selected.forEach { NSWorkspace.shared.open($0) }
+      case "w": dismiss()
       default: return false
       }
       return true
@@ -422,7 +425,11 @@ struct ShelfView: View {
     ShelfGlassGroup(spacing: 14) {
       ZStack {
         if model.expanded { expanded.transition(.opacity.combined(with: .scale(scale: 0.92, anchor: .top))) }
-        else { compact.transition(.opacity.combined(with: .scale(scale: 0.9))) }
+        else {
+          compact
+            .overlay(alignment: .topLeading) { closeButton.padding(7) }
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .shelfGlass(shape, id: "shelf", in: ns)
@@ -445,6 +452,15 @@ struct ShelfView: View {
   }
 
   private func setExpanded(_ e: Bool) { withAnimation(ShelfModel.spring) { model.expanded = e } }
+
+  /// Closes the shelf (files stay where they are; the shelf only holds references).
+  private var closeButton: some View {
+    Button { panel?.dismiss() } label: {
+      Image(systemName: "xmark").font(.system(size: 10, weight: .bold)).frame(width: 22, height: 22)
+    }
+    .lemonButton(shape: .circle)
+    .help("Close shelf (⌘W)")
+  }
 
   // MARK: Compact
 
@@ -572,6 +588,8 @@ struct ShelfView: View {
         Image(systemName: "arrow.down.right.and.arrow.up.left").font(.system(size: 11, weight: .bold)).frame(width: 26, height: 26)
       }
       .lemonButton(shape: .circle)
+      .help("Collapse")
+      closeButton
     }
     .contentShape(Rectangle())
     .gesture(move)

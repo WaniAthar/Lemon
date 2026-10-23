@@ -5,12 +5,15 @@ struct LemonApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
   @AppStorage(alwaysShowFanKey) private var alwaysShow = false
 
+  /// Self-test runs launch the app too; they shouldn't add a menu bar item.
+  private static let selfTest = CommandLine.arguments.contains("--selftest")
+
   var body: some Scene {
-    MenuBarExtra {
+    MenuBarExtra(isInserted: .constant(!Self.selfTest)) {
       Toggle("Show Lemon on Every File Drag", isOn: $alwaysShow)
       Text("While dragging: ⇧ Convert · ⌘ Edit · ⌃ Actions")
       Divider()
-      Button("New Shelf") { Shelves.newShelf() }
+      Button("Show Shelf") { Shelves.newShelf() }
       Button("Allow a Folder…") { FolderAccess.shared.add() }
       SettingsLink { Text("Settings…") }.keyboardShortcut(",")
       Divider()
