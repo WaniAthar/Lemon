@@ -22,6 +22,7 @@ enum ImageTools {
 
   /// Full-size decode with EXIF orientation applied to the pixels.
   static func decode(_ src: URL) throws -> (CGImage, [CFString: Any]) {
+    if src.pathExtension.lowercased() == "svg" { return (try svg(src), [:]) }
     guard let s = CGImageSourceCreateWithURL(src as CFURL, nil),
           let props = CGImageSourceCopyPropertiesAtIndex(s, 0, nil) as? [CFString: Any] else {
       throw ToolError("Can't read \(src.lastPathComponent)")
@@ -337,12 +338,10 @@ enum PDFTools {
     }
   }
 
-  /// Each page rendered at 2x (144 dpi).
+  /// Each page at 300 dpi, long side capped at 6000 px.
   static func images(_ u: URL, type: UTType, ext: String) throws -> [URL] {
     try pages(try open(u)).enumerated().map { i, p in
-      let b = p.bounds(for: .mediaBox).size
-      let img = p.thumbnail(of: NSSize(width: b.width * 2, height: b.height * 2), for: .mediaBox)
-      guard let cg = img.cgImage(forProposedRect: nil, context: nil, hints: nil) else { throw ToolError("Couldn't render page \(i + 1)") }
+      guard let cg = OfficeTools.pageImage(p, dpi: 300, maxSide: 6000) else { throw ToolError("Couldn't render page \(i + 1)") }
       let out = outputURL(for: u, ext: ext, suffix: "-p\(i + 1)")
       try ImageTools.write(cg, props: [:], type: type, to: out)
       return out
@@ -510,9 +509,7 @@ enum TextTools {
   }
 
   static func delimited(_ src: URL, to sep: Character, ext: String) throws -> URL {
-    let inSep: Character = canonicalExt(src.pathExtension) == "tsv" ? "\t" : ","
-    guard ["csv", "tsv"].contains(canonicalExt(src.pathExtension)) else { throw ToolError("Only CSV and TSV are supported so far") }
-    let rows = parse(try String(contentsOf: src, encoding: .utf8), separator: inSep)
+    guard let rows = try Sheets.read(src).first?.rows else { throw ToolError("\(src.lastPathComponent) has no sheets") }  // ponytail: first sheet only
     let text = rows.map { row in
       row.map { f in
         f.contains(sep) || f.contains("\"") || f.contains("\n") ? "\"" + f.replacingOccurrences(of: "\"", with: "\"\"") + "\"" : f
@@ -611,6 +608,7 @@ enum TextTools {
 
 enum DocTools {
   static func read(_ u: URL) throws -> NSAttributedString {
+    if let s = try OfficeTools.read(u) { return s }
     if ["md", "markdown"].contains(u.pathExtension.lowercased()) {
       let s = try String(contentsOf: u, encoding: .utf8)
       return NSAttributedString(try AttributedString(markdown: s, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))

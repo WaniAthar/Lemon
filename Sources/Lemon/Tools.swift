@@ -3,13 +3,15 @@ import AVFoundation
 import UniformTypeIdentifiers
 
 enum FileKind: Hashable {
-  case image, pdf, video, audio, document, spreadsheet, subtitle, archive, other
+  case image, pdf, video, audio, document, spreadsheet, slides, subtitle, archive, other
 
-  static let all: Set<FileKind> = [.image, .pdf, .video, .audio, .document, .spreadsheet, .subtitle, .archive, .other]
+  static let all: Set<FileKind> = [.image, .pdf, .video, .audio, .document, .spreadsheet, .slides, .subtitle, .archive, .other]
 
   init(_ url: URL) {
     let ext = url.pathExtension.lowercased()
     if ["srt", "vtt"].contains(ext) { self = .subtitle; return }
+    if ["ppt", "pptx"].contains(ext) { self = .slides; return }
+    if ["epub", "textclipping"].contains(ext) { self = .document; return }
     if ["csv", "tsv", "xlsx", "xls", "ods"].contains(ext) { self = .spreadsheet; return }
     if ["mkv", "webm", "avi", "wmv", "flv", "m4v", "3gp", "mts", "m2ts"].contains(ext) { self = .video; return }
     if ["ogg", "oga", "opus", "wma", "flac", "ape", "caf"].contains(ext) { self = .audio; return }
@@ -101,7 +103,7 @@ enum Tools {
     }.prefix(maxInFan))
   }
 
-  static let all: [Tool] = convert + edit + actions
+  static let all: [Tool] = convert + office + edit + actions
 
   // MARK: Convert (Shift)
 
@@ -138,8 +140,8 @@ enum Tools {
            run: eachMany { try PDFTools.images($0, type: .png, ext: "png") }),
       Tool(id: "pdf.jpg", mode: .convert, title: "Pages to JPG", short: "JPG", symbol: "photo", kinds: [.pdf],
            run: eachMany { try PDFTools.images($0, type: .jpeg, ext: "jpg") }),
-      Tool(id: "pdf.docx", mode: .convert, title: "Convert to DOCX (text)", short: "DOCX", symbol: "doc.text", kinds: [.pdf],
-           run: each { try PDFTools.document($0, as: .officeOpenXML, ext: "docx") }),
+      Tool(id: "pdf.docx", mode: .convert, title: "Convert to DOCX", short: "DOCX", symbol: "doc.text", kinds: [.pdf],
+           run: each(OfficeTools.pdfToDOCX)),
       Tool(id: "pdf.rtf", mode: .convert, title: "Convert to RTF (text)", short: "RTF", symbol: "doc.plaintext", kinds: [.pdf],
            run: each { try PDFTools.document($0, as: .rtf, ext: "rtf") }),
       Tool(id: "pdf.txt", mode: .convert, title: "Convert to TXT", short: "TXT", symbol: "text.alignleft", kinds: [.pdf],
