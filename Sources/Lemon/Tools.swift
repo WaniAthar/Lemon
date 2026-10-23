@@ -101,7 +101,7 @@ enum Tools {
     }.prefix(maxInFan))
   }
 
-  static let all: [Tool] = convert + edit + actions
+  static let all: [Tool] = convert + edit + actions + extras
 
   // MARK: Convert (Shift)
 
