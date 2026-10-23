@@ -280,6 +280,7 @@ import UniformTypeIdentifiers
     if let i = CommandLine.arguments.firstIndex(of: "--render"), i + 1 < CommandLine.arguments.count {
       let out = URL(fileURLWithPath: CommandLine.arguments[i + 1])
       renderPreview(urls: [jpg], to: out)
+      renderMenuBarIcon(to: out.deletingPathExtension().appendingPathExtension("menubar.png"))
       renderPreview(urls: [jpg, jpg], to: out.deletingPathExtension().appendingPathExtension("many.png"))
       let long = dir.appendingPathComponent("Holiday photos from the lake house weekend.jpg")
       try? FileManager.default.copyItem(at: jpg, to: long)
@@ -333,6 +334,32 @@ import UniformTypeIdentifiers
   }
 
   private static func dir(_ u: URL) -> URL { u.deletingLastPathComponent() }
+
+  /// The menu bar icon tinted as macOS does for light and dark menu bars, at 1x/2x/6x.
+  static func renderMenuBarIcon(to out: URL) {
+    let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 520, pixelsHigh: 140, bitsPerSample: 8, samplesPerPixel: 4,
+                               hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+    for (row, (bg, fg)) in [(NSColor(white: 0.93, alpha: 1), NSColor.black), (NSColor(white: 0.15, alpha: 1), NSColor.white)].enumerated() {
+      bg.setFill()
+      NSRect(x: 0, y: CGFloat(row) * 70, width: 520, height: 70).fill()
+      var x: CGFloat = 12
+      for scale: CGFloat in [1, 2, 6] {
+        let s = 18 * scale
+        let tinted = NSImage(size: NSSize(width: s, height: s), flipped: false) { r in
+          NSImage.lemonTemplate.draw(in: r)
+          fg.set()
+          r.fill(using: .sourceAtop)
+          return true
+        }
+        tinted.draw(in: NSRect(x: x, y: CGFloat(row) * 70 + (70 - min(s, 60)) / 2, width: min(s, 60), height: min(s, 60)))
+        x += min(s, 60) + 24
+      }
+    }
+    NSGraphicsContext.restoreGraphicsState()
+    try? rep.representation(using: .png, properties: [:])?.write(to: out)
+  }
 
   static func makeVideo(_ url: URL) async throws {
     let w = try AVAssetWriter(outputURL: url, fileType: .mov)

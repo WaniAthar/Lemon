@@ -16,7 +16,7 @@ struct LemonApp: App {
       Divider()
       Button("Quit Lemon") { NSApp.terminate(nil) }.keyboardShortcut("q")
     } label: {
-      Text("🍋")
+      Image(nsImage: .lemonTemplate)
     }
     Settings { SettingsView() }
   }
