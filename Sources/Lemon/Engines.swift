@@ -370,10 +370,7 @@ enum PDFTools {
     return out
   }
 
-  static func compress(_ u: URL) throws -> URL {
-    try save(try open(u), to: outputURL(for: u, ext: "pdf", suffix: "-small"),
-             options: [.saveImagesAsJPEGOption: true, .optimizeImagesForScreenOption: true])
-  }
+  static func compress(_ u: URL) throws -> URL { try compress(u, settings: PDFCompressSettings()) }
 
   static func rotate(_ u: URL) throws -> URL {
     let d = try open(u)

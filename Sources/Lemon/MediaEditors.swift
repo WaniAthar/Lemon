@@ -713,7 +713,7 @@ struct AudioToVideoEditor: View {
 // MARK: - Compress video
 
 struct VideoCompressEditor: View {
-  enum Level: String, CaseIterable { case balanced = "Balanced", strong = "Strong", custom = "Custom" }
+  enum Level: String, CaseIterable { case balanced = "Balanced", strong = "Strong", custom = "Custom", size = "Target size" }
   enum MaxSide: String, CaseIterable {
     case original = "Original", p1080 = "1080p", p720 = "720p", p480 = "480p"
     var pixels: Int? { [nil, 1920, 1280, 854][Self.allCases.firstIndex(of: self)!] }
@@ -724,6 +724,8 @@ struct VideoCompressEditor: View {
   @State private var quality = 50.0
   @State private var codec = VideoCompressSettings.Codec.h264
   @State private var maxSide = MaxSide.original
+  @State private var target = 25.0
+  @State private var unit = CompressEditor.Unit.mb
   @State private var estimate: (bytes: Int, exact: Bool)?
   @State private var error: String?
   @State private var working = false
@@ -736,7 +738,9 @@ struct VideoCompressEditor: View {
   }
 
   private var settings: VideoCompressSettings {
-    VideoCompressSettings(quality: level == .balanced ? 50 : level == .strong ? 30 : Int(quality), codec: codec, maxSide: maxSide.pixels)
+    VideoCompressSettings(quality: level == .balanced ? 50 : level == .strong ? 30 : Int(quality), codec: codec, maxSide: maxSide.pixels,
+                          bitrate: level == .size ? VideoCompressSettings.bitrate(forTarget: Int(target * (unit == .kb ? 1024 : 1_048_576)),
+                                                                                  duration: clip.duration) : nil)
   }
 
   private var saved: Int {
@@ -753,6 +757,15 @@ struct VideoCompressEditor: View {
         if level == .custom {
           Labeled(title: "Quality", value: "\(Int(quality))") { Slider(value: $quality, in: 10...90, step: 1).tint(lemonYellow) }
             .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
+        if level == .size {
+          Labeled(title: "Make the video at most") {
+            HStack {
+              TextField("Size", value: $target, format: .number).textFieldStyle(.roundedBorder).frame(width: 90)
+              Chips(options: CompressEditor.Unit.allCases, label: \.rawValue, selection: $unit)
+            }
+          }
+          .transition(.move(edge: .trailing).combined(with: .opacity))
         }
         Labeled(title: "Encoder") { Chips(options: VideoCompressSettings.Codec.allCases, label: \.rawValue, selection: $codec) }
         Labeled(title: "Max size") { Chips(options: MaxSide.allCases, label: \.rawValue, selection: $maxSide) }

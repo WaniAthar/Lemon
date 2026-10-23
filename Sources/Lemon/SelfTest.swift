@@ -273,6 +273,7 @@ import UniformTypeIdentifiers
     check(DialGeo.index(dx: 0, dy: 100, of: 6) == 0 && DialGeo.index(dx: 100, dy: 0, of: 4) == 1 && DialGeo.index(dx: 0, dy: 10, of: 6) == nil,
           "dial hit-testing: top is petal 0, clockwise, hub ignored")
 
+    await compressResizePack(dir: dir)  // CompressResizeTests.swift
     await floatPack(dir: dir)
     await pdfPack(dir: dir)  // PDFSelfTest.swift
     if let i = CommandLine.arguments.firstIndex(of: "--render"), i + 1 < CommandLine.arguments.count {

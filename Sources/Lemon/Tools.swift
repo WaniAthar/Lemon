@@ -183,6 +183,9 @@ enum Tools {
          kinds: [.image], editor: { urls in EditorWindow.show(size: CGSize(width: 860, height: 560)) { CompressEditor(urls: urls, close: $0) } },
          run: each(ImageTools.compress)),
     // PDF editors (PDFEditors.swift): Organize and Merge lead the PDF petals
+    Tool(id: "edit.resize", mode: .edit, title: "Resize", short: "Resize", symbol: "arrow.up.left.and.arrow.down.right",
+         kinds: [.image], editor: { urls in EditorWindow.show(size: CGSize(width: 860, height: 580)) { ResizeEditor(urls: urls, close: $0) } },
+         run: each { try ImageTools.resize($0, ResizeSettings(width: 1920)) }),
     Tool(id: "edit.organize", mode: .edit, title: "Organize pages", short: "Organize", symbol: "square.grid.3x3",
          kinds: [.pdf], editor: { urls in EditorWindow.show(size: CGSize(width: 900, height: 680)) { OrganizeEditor(urls: urls, close: $0) } },
          run: { [try PDFTools.organize($0, pages: PDFTools.allPages($0))] }),
@@ -191,8 +194,8 @@ enum Tools {
          editor: { urls in EditorWindow.show(size: CGSize(width: 640, height: 560)) { MergeEditor(urls: urls, close: $0) } },
          run: { [try PDFTools.merge($0)] }),
     Tool(id: "edit.compress.pdf", mode: .edit, title: "Compress", short: "Compress", symbol: "arrow.down.right.and.arrow.up.left",
-         kinds: [.pdf], run: each(PDFTools.compress)),
-    // Image editors (ImageEditors.swift)
+         kinds: [.pdf], editor: { urls in EditorWindow.show(size: CGSize(width: 880, height: 580)) { PDFCompressEditor(urls: urls, close: $0) } },
+         run: each(PDFTools.compress)),
     Tool(id: "edit.adjust", mode: .edit, title: "Edit", short: "Edit", symbol: "slider.horizontal.3",
          kinds: [.image], editor: { urls in EditorWindow.show(size: CGSize(width: 940, height: 640)) { AdjustEditor(urls: urls, close: $0) } },
          run: each { try ImageTools.adjust($0, Adjustments(exposure: 0.1, contrast: 0.15, vibrance: 0.2)) }),

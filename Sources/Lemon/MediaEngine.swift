@@ -22,9 +22,17 @@ struct VideoCompressSettings: Equatable, Sendable {
   var quality = 50  // VideoToolbox constant quality, 1–100
   var codec = Codec.h264
   var maxSide: Int? = nil
+  var bitrate: Int? = nil  // video bits/s; replaces `quality` when aiming for a file size
+
+  /// Video bitrate that lands a `duration`-second file near `bytes` (128 kb/s AAC audio, 6% container headroom).
+  static func bitrate(forTarget bytes: Int, duration: Double) -> Int? {
+    guard duration > 0 else { return nil }
+    return max(100_000, Int(Double(bytes) * 8 * 0.94 / duration) - 128_000)
+  }
 
   var args: [String] {
-    var a = ["-c:v", codec == .h264 ? "h264_videotoolbox" : "hevc_videotoolbox", "-q:v", "\(quality)", "-pix_fmt", "yuv420p"]
+    let rate = bitrate.map { ["-b:v", "\($0)", "-maxrate", "\($0 * 5 / 4)", "-bufsize", "\($0 * 2)"] } ?? ["-q:v", "\(quality)"]
+    var a = ["-c:v", codec == .h264 ? "h264_videotoolbox" : "hevc_videotoolbox"] + rate + ["-pix_fmt", "yuv420p"]
     if codec == .hevc { a += ["-tag:v", "hvc1"] }  // QuickTime only plays HEVC tagged hvc1
     if let m = maxSide {
       a += ["-vf", "scale=w='min(iw,\(m))':h='min(ih,\(m))':force_original_aspect_ratio=decrease:force_divisible_by=2"]
