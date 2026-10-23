@@ -137,7 +137,8 @@ extension SelfTest {
 
     func ids(_ urls: [URL]) -> [String] { Tools.available(for: urls, mode: .edit).map(\.id) }
     check(ids([a]).contains("edit.organize") && ids([a, b]).contains("edit.merge") && ids(imgs).contains("edit.collage")
-          && ids([imgs[0]]).contains("edit.createpdf") && !ids([imgs[0]]).contains("edit.collage"), "PDF pack tools routed")
+          && !ids([imgs[0]]).contains("edit.collage")
+          && Tools.available(for: [imgs[0]], mode: .convert).first { $0.id == "img.topdf" }?.editor != nil, "PDF pack tools routed")
 
     if let i = CommandLine.arguments.firstIndex(of: "--render"), i + 1 < CommandLine.arguments.count {
       let out = URL(fileURLWithPath: CommandLine.arguments[i + 1]).deletingPathExtension().appendingPathExtension("pdfeditors.png")

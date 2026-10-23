@@ -97,13 +97,25 @@ enum Tools {
     guard !urls.isEmpty else { return [] }
     let kinds = Set(urls.map(FileKind.init))
     let exts = Set(urls.map { canonicalExt($0.pathExtension) })
-    return Array(all.filter {
-      $0.mode == mode && kinds.isSubset(of: $0.kinds) && (!$0.needsMany || urls.count > 1)
-        && !(exts.count == 1 && $0.outputExt == exts.first)
-    }.prefix(maxInFan))
+    let fits = all.enumerated().filter { _, t in
+      t.mode == mode && kinds.isSubset(of: t.kinds) && (!t.needsMany || urls.count > 1)
+        && !(exts.count == 1 && t.outputExt == exts.first)
+    }
+    // Preferred tools first, so the most useful ones are what's left when the dial overflows.
+    let rank = Dictionary(uniqueKeysWithValues: preferred.enumerated().map { ($1, $0) })
+    return Array(fits.sorted { (rank[$0.element.id] ?? 1000 + $0.offset) < (rank[$1.element.id] ?? 1000 + $1.offset) }
+      .map(\.element).prefix(maxInFan))
   }
 
-  static let all: [Tool] = convert + office + edit + actions
+  /// Dial order where tools compete for petals (image and PDF Edit). Unlisted tools follow in registry order.
+  static let preferred = [
+    "edit.compress", "edit.resize", "edit.adjust", "edit.crop", "edit.removebg", "edit.annotate", "edit.redact", "edit.frame",
+    "edit.watermark", "edit.metadata", "edit.collage", "edit.rotate", "edit.searchable",
+    "edit.organize", "edit.merge", "edit.compress.pdf", "edit.protect", "edit.unlock", "edit.pagenumbers",
+    "edit.split", "edit.rotate.pdf", "edit.metadata.pdf",
+  ]
+
+  static let all: [Tool] = convert + office + edit + actions + extras
 
   // MARK: Convert (Shift)
 
@@ -131,8 +143,10 @@ enum Tools {
     if let avif = UTType("public.avif"), ImageTools.canWrite(avif) { images.append(image(avif, "avif")) }
     images += [
       image(.bmp, "bmp"),
-      Tool(id: "img.topdf", mode: .convert, title: "Convert to PDF", short: "PDF", symbol: "doc.richtext", kinds: [.image],
-           outputExt: "pdf", run: { [try ImageTools.toPDF($0)] }),
+      // Page size, margins and order matter when images become a PDF, so this one opens the Create PDF window.
+      Tool(id: "img.topdf", mode: .convert, title: "Convert to PDF", short: "PDF", symbol: "doc.richtext", kinds: [.image], outputExt: "pdf",
+           editor: { urls in EditorWindow.show(size: CGSize(width: 900, height: 660)) { CreatePDFEditor(urls: urls, close: $0) } },
+           run: { [try ImageTools.toPDF($0)] }),
     ]
     return images + [
       // PDF
@@ -221,9 +235,9 @@ enum Tools {
     Tool(id: "edit.rotate", mode: .edit, title: "Rotate & Flip", short: "Rotate", symbol: "rotate.right",
          kinds: [.image], editor: { urls in EditorWindow.show(size: CGSize(width: 640, height: 600)) { RotateEditor(urls: urls, close: $0) } },
          run: each(ImageTools.rotate)),
-    Tool(id: "edit.qr", mode: .edit, title: "Read QR code", short: "QR Code", symbol: "qrcode.viewfinder",
+    Tool(id: "edit.qr", mode: .convert, title: "Read QR code", short: "QR", symbol: "qrcode.viewfinder",
          kinds: [.image], run: each(ImageTools.qr)),
-    Tool(id: "edit.ocr", mode: .edit, title: "Extract text", short: "Text", symbol: "text.viewfinder",
+    Tool(id: "edit.ocr", mode: .convert, title: "Extract text (OCR)", short: "Text", symbol: "text.viewfinder",
          kinds: [.image], run: each(ImageTools.ocr)),
     Tool(id: "edit.collage", mode: .edit, title: "Create collage", short: "Collage", symbol: "square.grid.2x2",
          kinds: [.image], needsMany: true,

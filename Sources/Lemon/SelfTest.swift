@@ -277,6 +277,7 @@ import UniformTypeIdentifiers
     await floatPack(dir: dir)
     await pdfPack(dir: dir)  // PDFSelfTest.swift
     await officePack(dir: dir)  // OfficeSelfTest.swift
+    await extrasPack(dir: dir)  // ExtraSelfTest.swift
     if let i = CommandLine.arguments.firstIndex(of: "--render"), i + 1 < CommandLine.arguments.count {
       let out = URL(fileURLWithPath: CommandLine.arguments[i + 1])
       renderPreview(urls: [jpg], to: out)
