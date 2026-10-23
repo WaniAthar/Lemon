@@ -290,7 +290,7 @@ enum Slides {
       if hasText, let bu = chain.lazy.compactMap({ $0.kid("buNone") ?? $0.kid("buChar") ?? $0.kid("buAutoNum") }).first, bu.localName != "buNone" {
         number = bu.localName == "buAutoNum" ? number + 1 : 0
         let mark = bu.localName == "buChar" ? (bu.attr("char") ?? "•") : "\(number)."
-        out.append(NSAttributedString(string: mark + "\t", attributes: firstAttrs))
+        out.append(NSAttributedString(string: mark + (marL + indent < marL ? "\t" : " "), attributes: firstAttrs))
       }
       for r in runs {
         if r.localName == "br" { out.append(NSAttributedString(string: "\u{2028}", attributes: firstAttrs)); continue }
