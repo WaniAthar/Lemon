@@ -1,0 +1,6 @@
+.build/
+build/
+.ffmpeg-build/
+Support/bin/
+.DS_Store
+.swiftpm/
