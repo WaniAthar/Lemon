@@ -441,11 +441,12 @@ enum Rename {
   /// Names compare case-insensitively (the default APFS volume does).
   static func plan(_ urls: [URL], _ r: RenameRule) -> [RenameItem] {
     let sources = Set(urls.map { $0.path.lowercased() })
-    var items = urls.enumerated().map { i, u in RenameItem(from: u, to: u.deletingLastPathComponent().appendingPathComponent(name(u, index: i, r))) }
+    let names = urls.enumerated().map { i, u in name(u, index: i, r) }
+    var items = zip(urls, names).map { u, n in RenameItem(from: u, to: u.deletingLastPathComponent().appendingPathComponent(n.isEmpty ? "_" : n)) }
     let counts = Dictionary(grouping: items, by: { $0.to.path.lowercased() }).mapValues(\.count)
     for i in items.indices {
-      let n = items[i].to.lastPathComponent, key = items[i].to.path.lowercased()
-      if n.isEmpty || n.hasPrefix(".") || n.contains("/") || n.contains(":") || items[i].to.deletingPathExtension().lastPathComponent.isEmpty {
+      let n = names[i], key = items[i].to.path.lowercased()
+      if n.isEmpty || n.hasPrefix(".") || n.contains("/") || n.contains(":") {
         items[i].problem = "Invalid name"
       } else if counts[key, default: 0] > 1 {
         items[i].problem = "Duplicate name"

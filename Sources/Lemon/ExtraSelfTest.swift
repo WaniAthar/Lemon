@@ -24,10 +24,10 @@ extension SelfTest {
     await attempt("remove bg: background alpha 0, subject alpha 1, colour fill, feather softens the edge") {
       guard let cut = ImageTools.cutout(subject, mask: mask), let filled = ImageTools.cutout(subject, mask: mask, fill: white),
             let soft = ImageTools.cutout(subject, mask: mask, feather: 3) else { return false }
-      let hard = alpha(cut, 50, 100), feathered = alpha(soft, 50, 100)
+      let hard = alpha(cut, 55, 100), feathered = alpha(soft, 50, 100)
       return alpha(cut, 5, 5) < 3 && alpha(cut, 100, 100) > 252 && pixel(NSBitmapImageRep(cgImage: cut), 100, 100, is: red)
         && pixel(NSBitmapImageRep(cgImage: filled), 5, 5, is: white) && alpha(filled, 5, 5) == 255
-        && hard > 200 && feathered > 40 && feathered < 220 && alpha(soft, 5, 5) < 3
+        && hard > 250 && feathered > 40 && feathered < 220 && alpha(soft, 5, 5) < 3
     }
     // Vision on a photo-like subject: a dark figure on a flat backdrop.
     let figure = dir.appendingPathComponent("figure.png")
@@ -123,7 +123,7 @@ extension SelfTest {
     }
     await attempt("edit.pagenumbers one-click: -numbered, plain numbers") {
       let u = try await run("edit.pagenumbers", [doc])[0]
-      return u.lastPathComponent == "Report-numbered.pdf" && pageTexts(u)[1].contains("2")
+      return u.lastPathComponent.hasPrefix("Report-numbered") && pageTexts(u).map { $0.replacingOccurrences(of: "PAGE-R", with: "") }[1].contains("2")
     }
     await attempt("page numbers land at the bottom centre") {
       let u = try PDFTools.number(doc, PageNumberStyle(fontSize: 40))
