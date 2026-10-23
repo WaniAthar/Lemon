@@ -3,6 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key><string>Lemon</string>
+	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundleIdentifier</key><string>com.lemon.Lemon</string>
 	<key>CFBundleName</key><string>Lemon</string>
 	<key>CFBundleDisplayName</key><string>Lemon</string>

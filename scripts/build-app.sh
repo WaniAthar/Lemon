@@ -12,6 +12,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 xcrun vtool -set-build-version macos 14.0 "$(xcrun --sdk macosx --show-sdk-version)" -replace \
   -output "$APP/Contents/MacOS/Lemon" "$BIN/Lemon"
 cp Support/Info.plist "$APP/Contents/Info.plist"
+cp Support/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 # Bundled helper (scripts/build-ffmpeg.sh); runs inside Lemon's sandbox.
 if [ -x Support/bin/ffmpeg ]; then
   cp Support/bin/ffmpeg "$APP/Contents/MacOS/ffmpeg"
