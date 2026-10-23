@@ -24,7 +24,7 @@ struct Checkerboard: View {
   Text(s).font(.system(size: 10, weight: .bold)).tracking(0.8).foregroundStyle(.secondary)
 }
 
-@MainActor private func tag(_ s: String) -> some View {
+@MainActor private func paneLabel(_ s: String) -> some View {
   Text(s).font(.system(size: 10, weight: .bold)).tracking(0.8).foregroundStyle(.white)
     .padding(.horizontal, 8).padding(.vertical, 4)
     .lemonGlass(Capsule(), tint: .black.opacity(0.35))
@@ -120,7 +120,7 @@ struct RemoveBGEditor: View {
     }
     .aspectRatio(aspect, contentMode: .fit)
     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    .overlay(alignment: .topLeading) { tag(label).padding(8) }
+    .overlay(alignment: .topLeading) { paneLabel(label).padding(8) }
     .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
