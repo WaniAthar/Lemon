@@ -120,6 +120,7 @@ Switch modes mid-drag by tapping another key. Tools that need a decision (how mu
 
 ```sh
 brew tap waniathar/lemon https://github.com/WaniAthar/Lemon
+brew trust waniathar/lemon        # newer Homebrew asks you to trust third-party taps
 brew install --cask waniathar/lemon/lemon
 ```
 
