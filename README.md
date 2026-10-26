@@ -18,11 +18,62 @@
 </p>
 
 <p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#what-it-can-do">Features</a> ·
+  <a href="#build-from-source">Build from source</a>
+</p>
+
+<p align="center">
   <img src="docs/demo.gif" width="640" alt="Demo: drag a photo, tap Shift for Convert, Command for Edit, Control for Actions, drop to save">
   <br><sub>Drag, tap a key, drop. (Rendered preview: the real dial is Liquid Glass.)</sub>
 </p>
 
 ---
+
+## Install
+
+**You need** a Mac with Apple silicon (M1 or later) running macOS 14 Sonoma or later. Liquid Glass appears on macOS 26.
+
+### Option 1: Homebrew (recommended)
+
+```sh
+brew tap waniathar/lemon https://github.com/WaniAthar/Lemon
+brew trust waniathar/lemon
+brew install --cask waniathar/lemon/lemon
+```
+
+`brew trust` is a one-time step newer versions of Homebrew ask for before installing from a third-party tap.
+
+### Option 2: Download
+
+1. Download **[Lemon-0.1.0.zip](https://github.com/WaniAthar/Lemon/raw/dist/Lemon-0.1.0.zip)**.
+2. Double-click it to unzip, then drag **Lemon.app** into your **Applications** folder.
+
+### First launch
+
+Lemon isn't notarized by Apple yet, so macOS stops it the first time:
+
+1. Open **Lemon** from Applications. macOS says it can't verify the developer; click **Done**.
+2. Open **System Settings → Privacy & Security**, scroll down to the message about Lemon and click **Open Anyway**, then confirm with your password.
+3. Lemon asks for access to your **Home folder**. Allow it so results can be saved next to your files (you can change this later in Settings).
+4. Look for the 🍋 slice in your menu bar. Drag any file, tap <kbd>⇧ Shift</kbd>, and drop it on a format.
+
+<details>
+<summary>Prefer Terminal? Skip the Privacy & Security step</summary>
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Lemon.app
+```
+This removes the download flag macOS uses to show the warning. Only do this for apps you trust.
+</details>
+
+### Update and uninstall
+
+| | Homebrew | Download |
+|---|---|---|
+| **Update** | `brew update && brew upgrade --cask lemon` | Download the new zip and replace the app |
+| **Uninstall** | `brew uninstall --cask lemon` (add `--zap` to also remove settings) | Quit Lemon from the menu bar, then delete it from Applications |
 
 ## How it works
 
@@ -116,17 +167,7 @@ Switch modes mid-drag by tapping another key. Tools that need a decision (how mu
 - **Apple frameworks first.** ImageIO, Core Image, Vision, PDFKit, AVFoundation and VideoToolbox do the heavy lifting, with hardware acceleration.
 - **One bundled helper.** A static, LGPL-only ffmpeg covers the formats Apple doesn't encode (MP3, OGG, Opus, WMA, MKV, WebM, AVI, WMV, WebP). It runs inside Lemon's sandbox and only sees the files Lemon hands it.
 
-## Install with Homebrew
-
-```sh
-brew tap waniathar/lemon https://github.com/WaniAthar/Lemon
-brew trust waniathar/lemon        # newer Homebrew asks you to trust third-party taps
-brew install --cask waniathar/lemon/lemon
-```
-
-Lemon isn't notarized yet, so macOS blocks the first launch: open **System Settings → Privacy & Security** and click **Open Anyway**. Updates arrive with `brew upgrade --cask lemon`.
-
-## Install from source
+## Build from source
 
 **Requirements:** an Apple silicon Mac on macOS 14 or later, the Xcode command line tools (Swift 5.10+), and `pkg-config` for the one-time ffmpeg build (`brew install pkgconf`).
 
@@ -143,8 +184,6 @@ scripts/build-app.sh
 # 3. Run it
 open build/Lemon.app
 ```
-
-On first launch Lemon asks for access to your Home folder so it can save results next to your files. You can add or remove folders later in **Settings**.
 
 ## Testing
 
