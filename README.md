@@ -116,6 +116,15 @@ Switch modes mid-drag by tapping another key. Tools that need a decision (how mu
 - **Apple frameworks first.** ImageIO, Core Image, Vision, PDFKit, AVFoundation and VideoToolbox do the heavy lifting, with hardware acceleration.
 - **One bundled helper.** A static, LGPL-only ffmpeg covers the formats Apple doesn't encode (MP3, OGG, Opus, WMA, MKV, WebM, AVI, WMV, WebP). It runs inside Lemon's sandbox and only sees the files Lemon hands it.
 
+## Install with Homebrew
+
+```sh
+brew tap waniathar/lemon https://github.com/WaniAthar/Lemon
+brew install --cask waniathar/lemon/lemon
+```
+
+Lemon isn't notarized yet, so macOS blocks the first launch: open **System Settings → Privacy & Security** and click **Open Anyway**. Updates arrive with `brew upgrade --cask lemon`.
+
 ## Install from source
 
 **Requirements:** an Apple silicon Mac on macOS 14 or later, the Xcode command line tools (Swift 5.10+), and `pkg-config` for the one-time ffmpeg build (`brew install pkgconf`).
